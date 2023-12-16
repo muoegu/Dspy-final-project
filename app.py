@@ -1,13 +1,13 @@
 import streamlit as st
 import spacy
 
-nlp = spacy.load("en_core_web_sm")
+# nlp = spacy.load("en_core_web_sm")
 
 st.title('Final Project')
 st.write('程式設計與資料科學導論(Dspy)')
 
-st.write('R11142010: Micah Kitsunai')
-st.write('R11142010: Micah Kitsunai')
+st.write('R??????: Yusuke Taira')
+st.write('R??????: Mikhail Stepanenko')
 st.write('R11142010: Micah Kitsunai')
 
 
