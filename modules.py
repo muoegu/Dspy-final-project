@@ -25,7 +25,7 @@ def analyze_pos(text):
 import pandas as pd
 import ast 
 
-def count(df, column_name):
+def Count_sum(df, column_name):
     totals = {}
     for row in df[column_name]:
         if isinstance(row, str):

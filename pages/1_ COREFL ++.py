@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from modules import count
+from modules import Count_sum
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -17,9 +17,24 @@ def categorize_levels(df, column_name):
     df['Proficiency_Category'] = df[column_name].apply(lambda x: 'intermediate' if x in ['A1 (lower beginner)', 'A2 (upper beginner)', 'B1 (lower intermediate)'] else 'advanced')
     return df
 
-df = categorize_levels(df, 'Proficiency')
+def add_total_counts(df, column_name):
+    df['total_counts'] = df[column_name].apply(lambda x: sum(eval(x).values()) if isinstance(x, str) and x.startswith('{') else 0)
+    return df
 
-st.write(df)
+def df_head_select_boxes():
+    head_option = st.selectbox(
+        'Select count option:',
+        (5, 10, 20, 50 ,100), key='selectbox20')
+    return head_option
+
+if __name__ == "__main__":
+    head_option = df_head_select_boxes()
+
+df = categorize_levels(df, 'Proficiency')
+df = add_total_counts(df, 'pos_counts')
+
+
+st.write(df.head(head_option))
 st.write(len(df))
 st.write(df.describe())
 
@@ -32,42 +47,36 @@ def filter_df(df, column, options, default_option, key):
         df = df[df[column] == option]
     return df
 
-def add_total_counts(df, column_name):
-    df['total_counts'] = df[column_name].apply(lambda x: sum(eval(x).values()) if isinstance(x, str) and x.startswith('{') else 0)
-
-    return df
 
 
 col1, col2 = st.columns(2)
 
 with col1:
     st.write("Filter Options")
-    df1 = filter_df(df, 'Medium', ('Written', 'Spoken', 'Both'), 'Both', 'selectbox1')
-    df1 = filter_df(df1, 'Sex', ('Male', 'Female', 'Both'), 'Both', 'selectbox2')
-    df1 = filter_df(df1, 'L1', ('German', 'Spanish', 'Both'), 'Both', 'selectbox3')
-    df1 = filter_df(df1, 'Proficiency_Category', ('intermediate', 'advanced', 'Both'), 'Both', 'selectbox4')
-    df1 = filter_df(df1, 'Year data collection', ('all','2017', '2018', '2019', '2020', '2021'), 'all', 'selectbox5')
+    df1 = filter_df(df, 'Medium', ('All','Written', 'Spoken'), 'All', 'selectbox1')
+    df1 = filter_df(df1, 'Sex', ('All','Male', 'Female'), 'All', 'selectbox2')
+    df1 = filter_df(df1, 'L1', ('All','German', 'Spanish'), 'All', 'selectbox3')
+    df1 = filter_df(df1, 'Proficiency', ('All','intermediate', 'advanced'), 'All', 'selectbox4')
+    # df1 = filter_df(df1, 'Year data collection', ('All','2017', '2018', '2019', '2020', '2021'), 'All', 'selectbox5')
     selected_columns = st.multiselect('Choose columns:', df1.columns, key='multiselect1')
-    filtered_df1 = df1[selected_columns]
-    filtered_df1 = add_total_counts(filtered_df1, 'pos_counts')
-    st.write(filtered_df1)
+    filtered_df1 = df1[selected_columns + ['word_counts']+ ['pos_counts']]
     st.write(len(filtered_df1))
+    st.write('filtered data')
+    st.write(filtered_df1)
     
 
 with col2:
     st.write("Filter Options")
-    df2 = filter_df(df, 'Medium', ('Written', 'Spoken', 'Both'), 'Both', 'selectbox11')
-    df2 = filter_df(df2, 'Sex', ('Male', 'Female', 'Both'), 'Both', 'selectbox12')
-    df2 = filter_df(df2, 'L1', ('German', 'Spanish', 'Both'), 'Both', 'selectbox13')
-    df2 = filter_df(df2, 'Proficiency_Category', ('intermediate', 'advanced', 'Both'), 'Both', 'selectbox14')
-    df2 = filter_df(df2, 'Year data collection', ('2017', '2018', '2019', '2020', '2021', 'all'), 'all', 'selectbox15')
+    df2 = filter_df(df, 'Medium', ('All','Written', 'Spoken'), 'All', 'selectbox11')
+    df2 = filter_df(df2, 'Sex', ('All','Male', 'Female'), 'All', 'selectbox12')
+    df2 = filter_df(df2, 'L1', ('All','German', 'Spanish'), 'All', 'selectbox13')
+    df2 = filter_df(df2, 'Proficiency', ('All','intermediate', 'advanced'), 'All', 'selectbox14')
+    # df2 = filter_df(df2, 'Year data collection', ('All','2017', '2018', '2019', '2020', '2021'), 'all', 'selectbox15')
     selected_columns = st.multiselect('Choose columns:', df2.columns, key='multiselect2')
-    filtered_df2 = df2[selected_columns]
-    filtered_df2 = add_total_counts(filtered_df2, 'pos_counts')
-    st.write(filtered_df2)
+    filtered_df2 = df2[selected_columns + ['word_counts']+ ['pos_counts']]
     st.write(len(filtered_df2))
-
-
+    st.write('filtered data')
+    st.write(filtered_df2)
 
 
 def display_select_boxes():
@@ -88,8 +97,11 @@ def display_select_boxes():
 if __name__ == "__main__":
     count_option1, count_option2 = display_select_boxes()
 
-result1 = count(filtered_df1, count_option1)
-result2 = count(filtered_df2, count_option2)
+result1 = Count_sum(filtered_df1, count_option1)
+result2 = Count_sum(filtered_df2, count_option2)
+
+
+
 
 def create_df(result):
     count_df = pd.DataFrame.from_dict(result, orient='index', columns=['count'])
