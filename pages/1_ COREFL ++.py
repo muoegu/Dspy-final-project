@@ -5,12 +5,13 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from PIL import Image
 import io
+import ast
+
 
 st.title('COREFL ++')
 
 
-
-data = "chaplin_learners_analysis.csv"
+data = "chaplin_learners_analysis2.csv"
 df = pd.read_csv(data, sep='\t', encoding='utf-8')
 
 def categorize_levels(df, column_name):
@@ -38,8 +39,63 @@ st.write(df.head(head_option))
 st.write(len(df))
 st.write(df.describe())
 
+
 column_names = df.columns.tolist()
-# st.write(column_names)
+
+
+
+
+
+concordance_key = st.text_input('Concordance word', '')
+
+def search_surrounding_words_pos(df, search_word):
+    prev_results = []  
+    next_results = []  
+
+    for word_pos_pairs in df['word_pos_pairs']: 
+        word_pos_pairs = eval(word_pos_pairs)
+        for i, (word, pos) in enumerate(word_pos_pairs):
+            if word == search_word:
+                if i > 0:
+                    prev_word, prev_pos = word_pos_pairs[i-1]
+                    prev_results.append((prev_word, prev_pos))
+                if i < len(word_pos_pairs) - 1:
+                    next_word, next_pos = word_pos_pairs[i+1]
+                    next_results.append((next_word, next_pos))
+
+    prev_df = pd.DataFrame(prev_results, columns=['word', 'POS'])
+    next_df = pd.DataFrame(next_results, columns=['word', 'POS'])
+
+    return prev_df, next_df
+
+
+prev_df, next_df = search_surrounding_words_pos(df, concordance_key)
+st.write("word before:")
+st.write(prev_df)
+st.write("\nword after:")
+st.write(next_df)
+
+
+def analyze_pos_and_word_frequencies(data):
+    pos_frequencies = data['POS'].value_counts(normalize=True) * 100
+
+    word_frequencies = data['word'].value_counts()
+
+    return pos_frequencies, word_frequencies
+
+
+pos_freq, word_freq = analyze_pos_and_word_frequencies(prev_df)
+pos_freq_next, word_freq_next = analyze_pos_and_word_frequencies(next_df)
+
+st.write("word before:")
+st.write(pos_freq.head(10))
+st.write(word_freq.head(10))
+
+st.write("word after:")
+st.write(pos_freq_next.head(10))
+st.write(word_freq_next.head(10))
+
+
 
 def filter_df(df, column, options, default_option, key):
     option = st.selectbox(column, options, key=key)
@@ -77,6 +133,31 @@ with col2:
     st.write(len(filtered_df2))
     st.write('filtered data')
     st.write(filtered_df2)
+    
+    
+    
+    
+    
+    
+def total_word_count(df, column, word):
+    if not isinstance(df[column].iloc[0], dict):
+        df[column] = df[column].apply(ast.literal_eval)
+
+    total_count = df[column].apply(lambda d: d.get(word, 0)).sum()
+    return total_count
+
+search_key = st.text_input('Search word', '')
+
+a = total_word_count(filtered_df1, 'word_counts', search_key)
+st.write(a)
+
+
+
+
+
+
+
+
 
 
 def display_select_boxes():
@@ -128,6 +209,9 @@ if __name__ == "__main__":
         st.write("Result 2", result2_df)
 
 
+
+
+
 head_num = st.selectbox(
             'Select count option:',
             (5, 10, 15, 20), key='selectbox30')
@@ -135,8 +219,6 @@ head_num = st.selectbox(
 
 merged_df = pd.merge(result1_df[['POS or Word', 'percentage']], result2_df[['POS or Word', 'percentage']], on='POS or Word', suffixes=('_a', '_b'))
 merged_df = merged_df.sort_values(by=['percentage_a', 'percentage_b'], ascending=False).head(head_num)
-
-# インデックス（POS or Word）をカラムに変換してから、棒グラフを作成
 merged_df.set_index('POS or Word', inplace=True)
 merged_df[['percentage_a', 'percentage_b']].plot(kind='bar', figsize=(12, 6))
 
