@@ -28,7 +28,6 @@ def add_analysis_columns(df, text_column):
 
     return df
 
-import spacy
 
 nlp = spacy.load('en_core_web_sm')
 
@@ -43,8 +42,9 @@ def add_word_pos_pairs(df, text_column):
     return df
 
 
-df = add_analysis_columns(df, 'Text')
 
+df = add_analysis_columns(df, 'Text')
+df
 
 result_df = add_word_pos_pairs(df, 'Text')
 

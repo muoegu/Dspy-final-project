@@ -13,7 +13,7 @@ st.set_page_config(layout="wide")
 st.title('COREFL ++')
 
 
-data = "chaplin_learners_analysis2.csv"
+data = "chaplin_learners_analysis3.csv"
 df = pd.read_csv(data, sep='\t', encoding='utf-8')
 
 def categorize_levels(df, column_name):
@@ -65,7 +65,7 @@ with col1:
     df1 = filter_df(df1, 'Proficiency_Category', ('All','intermediate', 'advanced'), 'All', 'selectbox4')
     # df1 = filter_df(df1, 'Year data collection', ('All','2017', '2018', '2019', '2020', '2021'), 'All', 'selectbox5')
     selected_columns = st.multiselect('Choose columns:', df1.columns, key='multiselect1')
-    filtered_df1 = df1[selected_columns + ['word_pos_pairs'] + ['word_counts'] + ['pos_counts']]
+    filtered_df1 = df1[selected_columns + ['token_details'] + ['word_pos_pairs'] + ['word_counts'] + ['pos_counts']]
     st.write(len(filtered_df1))
     st.write('filtered data')
     st.write(filtered_df1)
@@ -79,30 +79,29 @@ with col2:
     df2 = filter_df(df2, 'Proficiency_Category', ('All','intermediate', 'advanced'), 'All', 'selectbox14')
     # df2 = filter_df(df2, 'Year data collection', ('All','2017', '2018', '2019', '2020', '2021'), 'all', 'selectbox15')
     selected_columns = st.multiselect('Choose columns:', df2.columns, key='multiselect2')
-    filtered_df2 = df2[selected_columns + ['word_pos_pairs'] + ['word_counts'] + ['pos_counts']]
+    filtered_df2 = df2[selected_columns + ['token_details'] + ['word_pos_pairs'] + ['word_counts'] + ['pos_counts']]
     st.write(len(filtered_df2))
     st.write('filtered data')
     st.write(filtered_df2)
     
     
     
-    
-    
-    
-def total_word_count(df, column, word):
-    if not isinstance(df[column].iloc[0], dict):
-        df[column] = df[column].apply(ast.literal_eval)
 
-    total_count = df[column].apply(lambda d: d.get(word, 0)).sum()
-    return total_count
+# def total_word_count(df, column, word):
+#     if not isinstance(df[column].iloc[0], dict):
+#         df[column] = df[column].apply(ast.literal_eval)
 
-search_key = st.text_input('Search word', '')
+#     total_count = df[column].apply(lambda d: d.get(word, 0)).sum()
+#     return total_count
 
-a = total_word_count(filtered_df1, 'word_counts', search_key)
-st.write(a)
+# search_key = st.text_input('Search word', '')
+
+# a = total_word_count(filtered_df1, 'word_counts', search_key)
+# st.write(a)
 
 
 
+st.title("Comparison of Results")
 
 
 def display_select_boxes():
@@ -117,6 +116,7 @@ if __name__ == "__main__":
 
 result1 = Count_sum(filtered_df1, count_option)
 result2 = Count_sum(filtered_df2, count_option)
+result1
 
 
 def create_df(result):
@@ -133,7 +133,6 @@ def create_df(result):
 
 
 if __name__ == "__main__":
-    st.title("Comparison of Results")
 
     result1_df = create_df(result1)
     result2_df = create_df(result2)
@@ -161,10 +160,15 @@ with col1:
             (5, 10, 15, 20), key='selectbox30')
 
 with col2:
-    option = st.multiselect('Select a value:', top_10_indices)
+    option = st.multiselect('ignore:', top_10_indices)
 
 with col3:
-    chart_option = st.multiselect('Select chart type:', ['a', 'b'])
+    chart_option = st.multiselect('Select chart type:', ['bar chart', 'pie chart', 'word cloud'])
+    
+    
+    
+    
+    
 
 def remove_rows_by_index(df, index_list):
     return df[~df.index.isin(index_list)]
@@ -307,6 +311,8 @@ def search_surrounding_words_pos(df, search_word):
     next_df = pd.DataFrame(next_results, columns=['word', 'POS'])
 
     return prev_df, next_df
+
+
 
     
 def analyze_pos_and_word_frequencies(data):
