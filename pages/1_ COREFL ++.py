@@ -13,7 +13,7 @@ st.set_page_config(layout="wide")
 st.title('COREFL ++')
 
 
-data = "chaplin_learners_analysis3.csv"
+data = "chaplin_learners_analysis4.csv"
 df = pd.read_csv(data, sep='\t', encoding='utf-8')
 
 def categorize_levels(df, column_name):
@@ -65,7 +65,7 @@ with col1:
     df1 = filter_df(df1, 'Proficiency_Category', ('All','intermediate', 'advanced'), 'All', 'selectbox4')
     # df1 = filter_df(df1, 'Year data collection', ('All','2017', '2018', '2019', '2020', '2021'), 'All', 'selectbox5')
     selected_columns = st.multiselect('Choose columns:', df1.columns, key='multiselect1')
-    filtered_df1 = df1[selected_columns + ['token_details'] + ['word_pos_pairs'] + ['word_counts'] + ['pos_counts']]
+    filtered_df1 = df1[selected_columns + ['token_details'] + ['word_pos_pairs'] + ['word_counts'] + ['pos_counts'] + ['lemma_counts']]
     st.write(len(filtered_df1))
     st.write('filtered data')
     st.write(filtered_df1)
@@ -79,7 +79,7 @@ with col2:
     df2 = filter_df(df2, 'Proficiency_Category', ('All','intermediate', 'advanced'), 'All', 'selectbox14')
     # df2 = filter_df(df2, 'Year data collection', ('All','2017', '2018', '2019', '2020', '2021'), 'all', 'selectbox15')
     selected_columns = st.multiselect('Choose columns:', df2.columns, key='multiselect2')
-    filtered_df2 = df2[selected_columns + ['token_details'] + ['word_pos_pairs'] + ['word_counts'] + ['pos_counts']]
+    filtered_df2 = df2[selected_columns + ['token_details'] + ['word_pos_pairs'] + ['word_counts'] + ['pos_counts'] + ['lemma_counts']]
     st.write(len(filtered_df2))
     st.write('filtered data')
     st.write(filtered_df2)
@@ -104,19 +104,41 @@ with col2:
 st.title("Comparison of Results")
 
 
+# def display_select_boxes():
+#     count_option = st.selectbox(
+#             'Select count option:',
+#             ('pos_counts', 'word_counts'), key='selectbox7')
+
+#     return count_option
+
+
 def display_select_boxes():
-    count_option = st.selectbox(
-            'Select count option:',
-            ('pos_counts', 'word_counts'), key='selectbox7')
+    options_mapping = {
+        'Part-of-Speech Counts': 'pos_counts',
+        'Word Frequency Counts': 'word_counts',
+        'Not strict': 'lemma_counts'
+        
+    }
+
+    count_option_label = st.selectbox(
+        'Select count option:',
+        options_mapping.keys(), 
+        key='selectbox7'
+    )
+
+    count_option = options_mapping[count_option_label]
 
     return count_option
 
 if __name__ == "__main__":
     count_option = display_select_boxes()
 
+mode_option = st.selectbox(
+            'Select mode option:',
+            ('Strict', 'Not strict'), key='selectbox40')
+
 result1 = Count_sum(filtered_df1, count_option)
 result2 = Count_sum(filtered_df2, count_option)
-result1
 
 
 def create_df(result):
@@ -136,12 +158,18 @@ if __name__ == "__main__":
 
     result1_df = create_df(result1)
     result2_df = create_df(result2)
+    
+    result1_len = len(result1)
+    result2_len = len(result2)
 
     col1, col2 = st.columns(2)
     with col1:
         st.write("Result 1", result1_df)
+        st.write("Total", result1_len)
     with col2:
         st.write("Result 2", result2_df)
+        st.write("Total", result2_len)
+        
 
 
 
@@ -164,11 +192,9 @@ with col2:
 
 with col3:
     chart_option = st.multiselect('Select chart type:', ['bar chart', 'pie chart', 'word cloud'])
-    
-    
-    
-    
-    
+
+
+
 
 def remove_rows_by_index(df, index_list):
     return df[~df.index.isin(index_list)]
