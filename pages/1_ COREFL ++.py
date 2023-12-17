@@ -45,58 +45,6 @@ column_names = df.columns.tolist()
 
 
 
-
-concordance_key = st.text_input('Concordance word', '')
-
-def search_surrounding_words_pos(df, search_word):
-    prev_results = []  
-    next_results = []  
-
-    for word_pos_pairs in df['word_pos_pairs']: 
-        word_pos_pairs = eval(word_pos_pairs)
-        for i, (word, pos) in enumerate(word_pos_pairs):
-            if word == search_word:
-                if i > 0:
-                    prev_word, prev_pos = word_pos_pairs[i-1]
-                    prev_results.append((prev_word, prev_pos))
-                if i < len(word_pos_pairs) - 1:
-                    next_word, next_pos = word_pos_pairs[i+1]
-                    next_results.append((next_word, next_pos))
-
-    prev_df = pd.DataFrame(prev_results, columns=['word', 'POS'])
-    next_df = pd.DataFrame(next_results, columns=['word', 'POS'])
-
-    return prev_df, next_df
-
-
-prev_df, next_df = search_surrounding_words_pos(df, concordance_key)
-st.write("word before:")
-st.write(prev_df)
-st.write("\nword after:")
-st.write(next_df)
-
-
-def analyze_pos_and_word_frequencies(data):
-    pos_frequencies = data['POS'].value_counts(normalize=True) * 100
-
-    word_frequencies = data['word'].value_counts()
-
-    return pos_frequencies, word_frequencies
-
-
-pos_freq, word_freq = analyze_pos_and_word_frequencies(prev_df)
-pos_freq_next, word_freq_next = analyze_pos_and_word_frequencies(next_df)
-
-st.write("word before:")
-st.write(pos_freq.head(10))
-st.write(word_freq.head(10))
-
-st.write("word after:")
-st.write(pos_freq_next.head(10))
-st.write(word_freq_next.head(10))
-
-
-
 def filter_df(df, column, options, default_option, key):
     option = st.selectbox(column, options, key=key)
     if option != default_option:
@@ -115,7 +63,7 @@ with col1:
     df1 = filter_df(df1, 'Proficiency_Category', ('All','intermediate', 'advanced'), 'All', 'selectbox4')
     # df1 = filter_df(df1, 'Year data collection', ('All','2017', '2018', '2019', '2020', '2021'), 'All', 'selectbox5')
     selected_columns = st.multiselect('Choose columns:', df1.columns, key='multiselect1')
-    filtered_df1 = df1[selected_columns + ['word_counts']+ ['pos_counts']]
+    filtered_df1 = df1[selected_columns + ['word_pos_pairs'] + ['word_counts'] + ['pos_counts']]
     st.write(len(filtered_df1))
     st.write('filtered data')
     st.write(filtered_df1)
@@ -129,7 +77,7 @@ with col2:
     df2 = filter_df(df2, 'Proficiency_Category', ('All','intermediate', 'advanced'), 'All', 'selectbox14')
     # df2 = filter_df(df2, 'Year data collection', ('All','2017', '2018', '2019', '2020', '2021'), 'all', 'selectbox15')
     selected_columns = st.multiselect('Choose columns:', df2.columns, key='multiselect2')
-    filtered_df2 = df2[selected_columns + ['word_counts']+ ['pos_counts']]
+    filtered_df2 = df2[selected_columns + ['word_pos_pairs'] + ['word_counts'] + ['pos_counts']]
     st.write(len(filtered_df2))
     st.write('filtered data')
     st.write(filtered_df2)
@@ -150,9 +98,6 @@ search_key = st.text_input('Search word', '')
 
 a = total_word_count(filtered_df1, 'word_counts', search_key)
 st.write(a)
-
-
-
 
 
 
@@ -319,3 +264,94 @@ def display_wordcloud():
 if __name__ == "__main__":
     st.title("Word Cloud")
     display_wordcloud()
+
+
+#Concordance Search
+
+st.title("Concordance Search")
+
+concordance_key = st.text_input('Search key', '')
+display_option = st.selectbox(
+    "Select data to display",
+    ("Both", "Words Before", "Words After")
+)
+
+def search_surrounding_words_pos(df, search_word):
+    prev_results = []  
+    next_results = []  
+
+    for word_pos_pairs in df['word_pos_pairs']: 
+        word_pos_pairs = eval(word_pos_pairs)
+        for i, (word, pos) in enumerate(word_pos_pairs):
+            if word == search_word:
+                if i > 0:
+                    prev_word, prev_pos = word_pos_pairs[i-1]
+                    prev_results.append((prev_word, prev_pos))
+                if i < len(word_pos_pairs) - 1:
+                    next_word, next_pos = word_pos_pairs[i+1]
+                    next_results.append((next_word, next_pos))
+
+    prev_df = pd.DataFrame(prev_results, columns=['word', 'POS'])
+    next_df = pd.DataFrame(next_results, columns=['word', 'POS'])
+
+    return prev_df, next_df
+
+    
+def analyze_pos_and_word_frequencies(data):
+    pos_frequencies = data['POS'].value_counts(normalize=True) * 100
+    word_frequencies = data['word'].value_counts()
+
+    return pos_frequencies, word_frequencies
+
+def display_frequencies(df, label):
+    pos_freq, word_freq = analyze_pos_and_word_frequencies(df)
+    return pos_freq.head(10), word_freq.head(10)
+
+if st.button('Search'):
+    prev_df1, next_df1 = search_surrounding_words_pos(filtered_df1, concordance_key)
+    prev_df2, next_df2 = search_surrounding_words_pos(filtered_df2, concordance_key)
+
+    pos_freq_before1, word_freq_before1 = display_frequencies(prev_df1, "Words Before")
+    pos_freq_after1, word_freq_after1 = display_frequencies(next_df1, "Words After")
+    pos_freq_before2, word_freq_before2 = display_frequencies(prev_df2, "Words Before")
+    pos_freq_after2, word_freq_after2 = display_frequencies(next_df2, "Words After")
+
+    if display_option in ["Both", "Words Before"]:
+        st.write("Words Before (df1 | df2):")
+        cols = st.columns(6)
+        with cols[0]:
+            st.write(prev_df1)
+        with cols[1]:
+            st.write("Top 10 POS Frequencies")
+            st.write(pos_freq_before1)
+        with cols[2]:
+            st.write("Top 10 Word Frequencies")
+            st.write(word_freq_before1)
+        with cols[3]:
+            st.write(prev_df2)
+        with cols[4]:
+            st.write("Top 10 POS Frequencies")
+            st.write(pos_freq_before2)
+        with cols[5]:
+            st.write("Top 10 Word Frequencies")
+            st.write(word_freq_before2)
+
+    if display_option in ["Both", "Words After"]:
+        st.write("Words After (df1 | df2):")
+        cols = st.columns(6)
+        with cols[0]:
+            st.write(next_df1)
+        with cols[1]:
+            st.write("Top 10 POS Frequencies")
+            st.write(pos_freq_after1)
+        with cols[2]:
+            st.write("Top 10 Word Frequencies")
+            st.write(word_freq_after1)
+        with cols[3]:
+            st.write(next_df2)
+        with cols[4]:
+            st.write("Top 10 POS Frequencies")
+            st.write(pos_freq_after2)
+        with cols[5]:
+            st.write("Top 10 Word Frequencies")
+            st.write(word_freq_after2)
