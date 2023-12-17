@@ -7,6 +7,8 @@ from PIL import Image
 import io
 import ast
 
+st.set_page_config(layout="wide")
+
 
 st.title('COREFL ++')
 
@@ -103,29 +105,18 @@ st.write(a)
 
 
 
-
-
 def display_select_boxes():
-    col1, col2 = st.columns(2)
-
-    with col1:
-        selected_option1 = st.selectbox(
+    count_option = st.selectbox(
             'Select count option:',
             ('pos_counts', 'word_counts'), key='selectbox7')
 
-    with col2:
-        selected_option2 = st.selectbox(
-            'Select count option:',
-            ('pos_counts', 'word_counts'), key='selectbox8')
-
-    return selected_option1, selected_option2
+    return count_option
 
 if __name__ == "__main__":
-    count_option1, count_option2 = display_select_boxes()
+    count_option = display_select_boxes()
 
-result1 = Count_sum(filtered_df1, count_option1)
-result2 = Count_sum(filtered_df2, count_option2)
-
+result1 = Count_sum(filtered_df1, count_option)
+result2 = Count_sum(filtered_df2, count_option)
 
 
 def create_df(result):
@@ -157,19 +148,34 @@ if __name__ == "__main__":
 
 
 
-head_num = st.selectbox(
+merged_df = pd.merge(result1_df[['POS or Word', 'percentage']], result2_df[['POS or Word', 'percentage']], on='POS or Word', suffixes=('_a', '_b'))
+merged_df = merged_df.sort_values(by=['percentage_a', 'percentage_b'], ascending=False)
+merged_df.set_index('POS or Word', inplace=True)
+top_10_indices = merged_df.index[:15].tolist()
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    head_num = st.selectbox(
             'Select count option:',
             (5, 10, 15, 20), key='selectbox30')
 
+with col2:
+    option = st.multiselect('Select a value:', top_10_indices)
 
-merged_df = pd.merge(result1_df[['POS or Word', 'percentage']], result2_df[['POS or Word', 'percentage']], on='POS or Word', suffixes=('_a', '_b'))
-merged_df = merged_df.sort_values(by=['percentage_a', 'percentage_b'], ascending=False).head(head_num)
-merged_df.set_index('POS or Word', inplace=True)
-merged_df[['percentage_a', 'percentage_b']].plot(kind='bar', figsize=(12, 6))
+with col3:
+    chart_option = st.multiselect('Select chart type:', ['a', 'b'])
+
+def remove_rows_by_index(df, index_list):
+    return df[~df.index.isin(index_list)]
+
+merged_df = remove_rows_by_index(merged_df, option).head(head_num)
 
 st.title("Charts")
 
 
+
+merged_df[['percentage_a', 'percentage_b']].plot(kind='bar', figsize=(12, 6))
 plt.title('Percentage Comparison by POS or Word')
 plt.ylabel('Percentage(%)')
 plt.xlabel('POS or Word')
@@ -194,8 +200,6 @@ plt.xlabel('POS or Word')
 plt.legend(['Dataset A', 'Dataset B'])
 plt.xticks(rotation=45)
 st.pyplot(plt)
-
-
 
 
 def display_bar_chart():
@@ -270,11 +274,19 @@ if __name__ == "__main__":
 
 st.title("Concordance Search")
 
-concordance_key = st.text_input('Search key', '')
-display_option = st.selectbox(
-    "Select data to display",
-    ("Both", "Words Before", "Words After")
-)
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    concordance_key = st.text_input('Search key', '')
+
+with col2:
+    display_option = st.selectbox(
+        "Select data to display",
+        ("Both", "Words Before", "Words After")
+    )
+
+with col3:
+    search_button = st.button('Search')
 
 def search_surrounding_words_pos(df, search_word):
     prev_results = []  
@@ -307,9 +319,13 @@ def display_frequencies(df, label):
     pos_freq, word_freq = analyze_pos_and_word_frequencies(df)
     return pos_freq.head(10), word_freq.head(10)
 
-if st.button('Search'):
+if search_button:
     prev_df1, next_df1 = search_surrounding_words_pos(filtered_df1, concordance_key)
     prev_df2, next_df2 = search_surrounding_words_pos(filtered_df2, concordance_key)
+    prev_df1_len = len(prev_df1)
+    next_df1_len = len(next_df1)
+    prev_df2_len = len(prev_df2)
+    next_df2_len = len(next_df2)
 
     pos_freq_before1, word_freq_before1 = display_frequencies(prev_df1, "Words Before")
     pos_freq_after1, word_freq_after1 = display_frequencies(next_df1, "Words After")
@@ -317,27 +333,40 @@ if st.button('Search'):
     pos_freq_after2, word_freq_after2 = display_frequencies(next_df2, "Words After")
 
     if display_option in ["Both", "Words Before"]:
-        st.write("Words Before (df1 | df2):")
-        cols = st.columns(6)
-        with cols[0]:
-            st.write(prev_df1)
-        with cols[1]:
+
+        col1, col4 = st.columns([3, 3])
+        with col1:
+            st.write(f"Words Before \"{concordance_key}\": {prev_df1_len}") 
+            st.dataframe(prev_df1, width=400, height=200)
+        with col4:
+            st.write(f"Words Before \"{concordance_key}\": {prev_df2_len}") 
+            st.dataframe(prev_df2, width=400, height=200)
+            
+
+        col2, col3, col5, col6 = st.columns([1, 1, 1, 1])
+        with col2:
             st.write("Top 10 POS Frequencies")
-            st.write(pos_freq_before1)
-        with cols[2]:
+            st.dataframe(pos_freq_before1, width=200, height=300)
+        with col3:
             st.write("Top 10 Word Frequencies")
-            st.write(word_freq_before1)
-        with cols[3]:
-            st.write(prev_df2)
-        with cols[4]:
+            # st.write(word_freq_before1)
+            st.dataframe(word_freq_before1, width=200, height=300)
+            
+        with col5:
             st.write("Top 10 POS Frequencies")
-            st.write(pos_freq_before2)
-        with cols[5]:
+            # st.write(pos_freq_before2)
+            st.dataframe(pos_freq_before2, width=200, height=300)
+            
+        with col6:
             st.write("Top 10 Word Frequencies")
-            st.write(word_freq_before2)
+            # st.write(word_freq_before2)
+            st.dataframe(word_freq_before2, width=200, height=300)
+            
+
+
 
     if display_option in ["Both", "Words After"]:
-        st.write("Words After (df1 | df2):")
+        st.write(f"Words After \"{concordance_key}\": {next_df1_len} {next_df2_len}")
         cols = st.columns(6)
         with cols[0]:
             st.write(next_df1)
