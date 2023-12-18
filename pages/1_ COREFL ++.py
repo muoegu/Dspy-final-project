@@ -10,7 +10,11 @@ import ast
 st.set_page_config(layout="wide")
 
 
-st.title('COREFL ++')
+# st.title('COREFL ++')
+# values = st.slider(
+#     'Select a range of values',
+#     0.0, 100.0, (25.0, 75.0))
+# st.write('Values:', values)
 
 
 data = "chaplin_learners_analysis4.csv"
@@ -134,8 +138,8 @@ if __name__ == "__main__":
     count_option = display_select_boxes()
 
 mode_option = st.selectbox(
-            'Select mode option:',
-            ('Strict', 'Not strict'), key='selectbox40')
+            'Select Case Sensitivity:',
+            ('case sensitive', 'not sensitive'), key='selectbox40')
 
 result1 = Count_sum(filtered_df1, count_option)
 result2 = Count_sum(filtered_df2, count_option)
@@ -201,7 +205,18 @@ def remove_rows_by_index(df, index_list):
 
 merged_df = remove_rows_by_index(merged_df, option).head(head_num)
 
+
+
 st.title("Charts")
+
+df_copy = merged_df.copy()
+
+# コピーに対して差の絶対値を計算し、新しいカラムに追加
+df_copy['diff'] = abs(df_copy['percentage_a'] - df_copy['percentage_b'])
+
+# コピーを並べ替え
+df_copy = df_copy.sort_values(by='diff', ascending=False)
+df_copy
 
 
 
@@ -212,6 +227,8 @@ plt.xlabel('POS or Word')
 plt.legend(['Dataset A', 'Dataset B'])
 plt.xticks(rotation=45)
 st.pyplot(plt)
+
+
 
 total_a = merged_df['percentage_a'].sum()
 total_b = merged_df['percentage_b'].sum()
@@ -358,6 +375,15 @@ if search_button:
     next_df1_len = len(next_df1)
     prev_df2_len = len(prev_df2)
     next_df2_len = len(next_df2)
+    
+    filtered_df1_sum = sum(result1_df['count'])
+    filtered_df2_sum = sum(result2_df['count'])
+    percentage_prev1 =  prev_df1_len / filtered_df1_sum
+    percentage_prev2 =  prev_df2_len / filtered_df2_sum
+    percentage_next1 =  next_df1_len / filtered_df1_sum
+    percentage_next2 =  next_df2_len / filtered_df2_sum
+    
+    
 
     pos_freq_before1, word_freq_before1 = display_frequencies(prev_df1, "Words Before")
     pos_freq_after1, word_freq_after1 = display_frequencies(next_df1, "Words After")
@@ -368,10 +394,10 @@ if search_button:
 
         col1, col4 = st.columns([3, 3])
         with col1:
-            st.write(f"Words Before \"{concordance_key}\": {prev_df1_len}") 
+            st.write(f"Words Before \"{concordance_key}\": {prev_df1_len}/{filtered_df1_sum} {percentage_prev1}%") 
             st.dataframe(prev_df1, width=400, height=200)
         with col4:
-            st.write(f"Words Before \"{concordance_key}\": {prev_df2_len}") 
+            st.write(f"Words Before \"{concordance_key}\": {prev_df2_len}/{filtered_df2_sum} {percentage_prev2}%") 
             st.dataframe(prev_df2, width=400, height=200)
             
 
@@ -395,24 +421,52 @@ if search_button:
             st.dataframe(word_freq_before2, width=200, height=300)
             
 
-
-
     if display_option in ["Both", "Words After"]:
-        st.write(f"Words After \"{concordance_key}\": {next_df1_len} {next_df2_len}")
-        cols = st.columns(6)
-        with cols[0]:
-            st.write(next_df1)
-        with cols[1]:
+
+        col1, col4 = st.columns([3, 3])
+        with col1:
+            st.write(f"Words Before \"{concordance_key}\": {next_df1_len}/{filtered_df1_sum} {percentage_next1}%") 
+            st.dataframe(next_df1, width=400, height=200)
+        with col4:
+            st.write(f"Words Before \"{concordance_key}\": {next_df2_len}/{filtered_df2_sum} {percentage_next2}%") 
+            st.dataframe(next_df2, width=400, height=200)
+            
+        col2, col3, col5, col6 = st.columns([1, 1, 1, 1])
+        with col2:
             st.write("Top 10 POS Frequencies")
-            st.write(pos_freq_after1)
-        with cols[2]:
+            st.dataframe(pos_freq_after1, width=200, height=300)
+        with col3:
             st.write("Top 10 Word Frequencies")
-            st.write(word_freq_after1)
-        with cols[3]:
-            st.write(next_df2)
-        with cols[4]:
+            # st.write(word_freq_before1)
+            st.dataframe(word_freq_after1, width=200, height=300)
+            
+        with col5:
             st.write("Top 10 POS Frequencies")
-            st.write(pos_freq_after2)
-        with cols[5]:
+            # st.write(pos_freq_before2)
+            st.dataframe(pos_freq_after2, width=200, height=300)
+            
+        with col6:
             st.write("Top 10 Word Frequencies")
-            st.write(word_freq_after2)
+            # st.write(word_freq_before2)
+            st.dataframe(word_freq_after2, width=200, height=300)
+        
+
+    # if display_option in ["Both", "Words After"]:
+    #     st.write(f"Words After \"{concordance_key}\": {next_df1_len} {next_df2_len}")
+    #     cols = st.columns(6)
+    #     with cols[0]:
+    #         st.write(next_df1)
+    #     with cols[1]:
+    #         st.write("Top 10 POS Frequencies")
+    #         st.write(pos_freq_after1)
+    #     with cols[2]:
+    #         st.write("Top 10 Word Frequencies")
+    #         st.write(word_freq_after1)
+    #     with cols[3]:
+    #         st.write(next_df2)
+    #     with cols[4]:
+    #         st.write("Top 10 POS Frequencies")
+    #         st.write(pos_freq_after2)
+    #     with cols[5]:
+    #         st.write("Top 10 Word Frequencies")
+    #         st.write(word_freq_after2)
