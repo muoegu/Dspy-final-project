@@ -58,9 +58,9 @@ def filter_df(df, column, options, default_option, key):
         df = df[df[column] == option]
     return df, option
 
-def display_selected_options(selected_options, title):
+def display_selected_options(selected_options, title, len):
     with st.sidebar:
-        st.markdown(f"#### {title}")
+        st.markdown(f"#### {title}   (`{len}`)")
         for column, option in selected_options.items():
             st.write(f"- **{column}:** `{option}`")
 

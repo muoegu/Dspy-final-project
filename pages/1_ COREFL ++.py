@@ -18,11 +18,13 @@ st.title('COREFL ++')
 
 
 # Create a table of contents in the sidebar
-st.sidebar.title("Table of Contents")
+st.sidebar.title("Contents")
 st.sidebar.markdown("""
 - [Corpus data](#section-1)
 - [Data Comparison Filter](#section-2)
-- [Section 3](#section-3)
+- [Comparison of Results](#section-3)
+- [Word Search](#section-4)
+- [Charts](#section-5)
 """)
 
 
@@ -42,11 +44,9 @@ def task_select_boxes():
         'Chaplin': "learners_all_chaplin.csv"
     }
 
-    task_label = st.selectbox(
+    task_label = st.radio(
         'Select task option:',
-        options=list(task_mapping.keys()), 
-        key='selectbox90'
-    )
+        options=list(task_mapping.keys()))
 
     selected_file = task_mapping[task_label]
 
@@ -56,9 +56,9 @@ st.markdown("<a name='section-1'></a>", unsafe_allow_html=True)
 st.subheader('Corpus data')
 
 
-with st.expander("💡"):
-    st.markdown('> :bulb: **Tip:** Remember to appreciate the little things in life.')
-    st.info('First, please select the type of task here. Afterward, you can select the number of data entries to display. By scrolling to the right or down, you can view all the data."')
+with st.expander("Hint"):
+    st.info('💡First, please select the type of task here. Afterward, you can select the number of data entries to display. By scrolling to the right or down, you can view all the data."')
+
 
 if __name__ == "__main__":
     selected_file = task_select_boxes()
@@ -99,9 +99,11 @@ st.dataframe(df.head(head_option), height=200)
 
 
 column_names = df.columns.tolist()
+
 st.subheader('Data Comparison Filter')
-st.markdown("<a href='https://dspy-final-project.streamlit.app/~/+/COREFL_++#data-comparison-filter'></a>", unsafe_allow_html=True)
-st.info('Here, you can select parameters for comparing two sets of data. By choosing the items you want to display in the "Choose columns:" section, you can verify that the filter function is working properly. The results can be checked in the sidebar on the left.')
+st.markdown("<a href='section-2'></a>", unsafe_allow_html=True)
+with st.expander("Hint"):
+    st.info('💡Here, you can select parameters for comparing two sets of data. By choosing the items you want to display in the "Choose columns:" section, you can verify that the filter function is working properly. The results can be checked in the sidebar on the left.')
 
 
 col1, col2 = st.columns(2)
@@ -121,8 +123,8 @@ with col2:
     st.dataframe(filtered_df2.head(10), height=200)
     
 
-display_selected_options(selected_options1, 'Filter Dataset A')
-display_selected_options(selected_options2, 'Filter Dataset B')
+display_selected_options(selected_options1, 'Filter Dataset A' ,filtered_df1_len)
+display_selected_options(selected_options2, 'Filter Dataset B',filtered_df2_len)
 # display_selected_options(selected_options1, "Selected Filters", filtered_df1, filtered_df2)
 # display_selected_options(selected_options2, "Selected Filters", filtered_df1, filtered_df2)
 
@@ -130,7 +132,9 @@ display_selected_options(selected_options2, 'Filter Dataset B')
 
 
 st.subheader("Comparison of Results")
-st.info('In this section, you can compare datasets after applying filters and view the results. You can select and display the comparison results for the frequency of words and POS.')
+st.markdown("<a name='section-3'></a>", unsafe_allow_html=True)
+with st.expander("Hint"):
+    st.info('💡In this section, you can compare datasets after applying filters and view the results. You can select and display the comparison results for the frequency of words and POS.')
 
 def display_select_boxes():
     options_mapping = {
@@ -152,6 +156,10 @@ def display_select_boxes():
 
 if __name__ == "__main__":
     count_column_name = display_select_boxes()
+
+
+
+
 
 # mode_option = st.selectbox(
 #             'Select Case Sensitivity:',
@@ -212,22 +220,25 @@ with col2:
     ignore_option = st.multiselect('Ignore:', top_10_indices)
 
 
-def seach_type():
-    seach_type = st.selectbox(
-            'Select seach type:',
-            ('show dataset analysis', 'show word analysis'), key='selectbox50')
-    return seach_type
+# def seach_type():
+#     seach_type = st.radio(
+#             'Select seach type:',
+#             ('show dataset analysis', 'show word analysis'), key='selectbox50')
+#     return seach_type
 
 
 
-if __name__ == "__main__":
-    seach_type = seach_type()
+# if __name__ == "__main__":
+#     seach_type = seach_type()
 
 #Concordance Search
 
 st.write('')
 st.subheader("Word Search")
-st.info('In this section, you can perform a detailed analysis of words. You can investigate the frequency and occurrence of a particular word, as well as the words that appear before and after it, along with their POS.')
+st.markdown("<a name='section-4'></a>", unsafe_allow_html=True)
+with st.expander("Hint"):
+    st.info('💡In this section, you can perform a detailed analysis of words. You can investigate the frequency and occurrence of a particular word, as well as the words that appear before and after it, along with their POS.')
+
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -236,7 +247,7 @@ with col1:
 with col2:
     display_option = st.selectbox(
         "Select data to display",
-        ("Both", "Words Before", "Words After")
+        ("Both", "Words Before", "Words After", "None")
     )
 
 with col3:
@@ -285,47 +296,49 @@ def format_percentage(num):
     else:
         return f"{num:.2g}%"
 
+prev_df1, next_df1 = search_surrounding_words_pos(filtered_df1, concordance_key)
+prev_df2, next_df2 = search_surrounding_words_pos(filtered_df2, concordance_key)
+prev_df1_len = len(prev_df1)
+next_df1_len = len(next_df1)
+prev_df2_len = len(prev_df2)
+next_df2_len = len(next_df2)
+
+filtered_df1_sum = sum(result1_df['count'])
+filtered_df2_sum = sum(result2_df['count'])
+percentage_prev1 =  prev_df1_len / filtered_df1_sum
+percentage_prev2 =  prev_df2_len / filtered_df2_sum
+percentage_next1 =  next_df1_len / filtered_df1_sum
+percentage_next2 =  next_df2_len / filtered_df2_sum
+
+formatted_percentage = format_percentage(percentage_prev1)
+formatted_percentage2 = format_percentage(percentage_prev2)
+formatted_percentage3 = format_percentage(percentage_next1)
+formatted_percentage4 = format_percentage(percentage_next2)
+
+
+pos_freq_before1, word_freq_before1 = analyze_and_display_top_frequencies(prev_df1,10)
+pos_freq_after1, word_freq_after1 = analyze_and_display_top_frequencies(next_df1,10)
+pos_freq_before2, word_freq_before2 = analyze_and_display_top_frequencies(prev_df2,10)
+pos_freq_after2, word_freq_after2 = analyze_and_display_top_frequencies(next_df2,10)
+
+st.session_state['pos_freq_before1'], st.session_state['word_freq_before1'] = analyze_and_display_top_frequencies(prev_df1, 10)
+st.session_state['pos_freq_after1'], st.session_state['word_freq_after1'] = analyze_and_display_top_frequencies(next_df1, 10)
+st.session_state['pos_freq_before2'], st.session_state['word_freq_before2'] = analyze_and_display_top_frequencies(prev_df2, 10)
+st.session_state['pos_freq_after2'], st.session_state['word_freq_after2'] = analyze_and_display_top_frequencies(next_df2, 10)
+
 if search_button:
-    prev_df1, next_df1 = search_surrounding_words_pos(filtered_df1, concordance_key)
-    prev_df2, next_df2 = search_surrounding_words_pos(filtered_df2, concordance_key)
-    prev_df1_len = len(prev_df1)
-    next_df1_len = len(next_df1)
-    prev_df2_len = len(prev_df2)
-    next_df2_len = len(next_df2)
-    
-    filtered_df1_sum = sum(result1_df['count'])
-    filtered_df2_sum = sum(result2_df['count'])
-    percentage_prev1 =  prev_df1_len / filtered_df1_sum
-    percentage_prev2 =  prev_df2_len / filtered_df2_sum
-    percentage_next1 =  next_df1_len / filtered_df1_sum
-    percentage_next2 =  next_df2_len / filtered_df2_sum
-    
-    formatted_percentage = format_percentage(percentage_prev1)
-    formatted_percentage2 = format_percentage(percentage_prev2)
-    formatted_percentage3 = format_percentage(percentage_next1)
-    formatted_percentage4 = format_percentage(percentage_next2)
-    
-    
 
-    pos_freq_before1, word_freq_before1 = analyze_and_display_top_frequencies(prev_df1,10)
-    pos_freq_after1, word_freq_after1 = analyze_and_display_top_frequencies(next_df1,10)
-    pos_freq_before2, word_freq_before2 = analyze_and_display_top_frequencies(prev_df2,10)
-    pos_freq_after2, word_freq_after2 = analyze_and_display_top_frequencies(next_df2,10)
-    
-    st.session_state['pos_freq_before1'], st.session_state['word_freq_before1'] = analyze_and_display_top_frequencies(prev_df1, 10)
-    st.session_state['pos_freq_after1'], st.session_state['word_freq_after1'] = analyze_and_display_top_frequencies(next_df1, 10)
-    st.session_state['pos_freq_before2'], st.session_state['word_freq_before2'] = analyze_and_display_top_frequencies(prev_df2, 10)
-    st.session_state['pos_freq_after2'], st.session_state['word_freq_after2'] = analyze_and_display_top_frequencies(next_df2, 10)
-
+    if display_option == "None":
+        st.write("")
     if display_option in ["Both", "Words Before"]:
 
         col1, col4 = st.columns([3, 3])
         with col1:
-            st.write(f"Words Before \"{concordance_key}\" in dataset1 : ", prev_df1_len) 
+            st.write(f"Words Before \"{concordance_key}\" in dataset A : ", prev_df1_len) 
             st.write(f"{prev_df1_len}/{filtered_df1_sum} {formatted_percentage}")            
             st.dataframe(prev_df1, width=400, height=200)
         with col4:
-            st.write(f"Words Before \"{concordance_key}\" in dataset2 : ", prev_df2_len) 
+            st.write(f"Words Before \"{concordance_key}\" in dataset B : ", prev_df2_len) 
             st.write(f"{prev_df2_len}/{filtered_df2_sum} {formatted_percentage2}%") 
             st.dataframe(prev_df2, width=400, height=200)
             
@@ -351,11 +364,11 @@ if search_button:
         st.markdown("<hr>", unsafe_allow_html=True)
         col1, col4 = st.columns([3, 3])
         with col1:
-            st.write(f"Words After \"{concordance_key}\" in dataset1 : ", next_df1_len) 
+            st.write(f"Words After \"{concordance_key}\" in dataset A : ", next_df1_len) 
             st.write(f"{next_df1_len}/{filtered_df1_sum} {formatted_percentage}")            
             st.dataframe(next_df1, width=400, height=200)
         with col4:
-            st.write(f"Words After \"{concordance_key}\" in dataset2 : ", next_df2_len) 
+            st.write(f"Words After \"{concordance_key}\" in dataset B : ", next_df2_len) 
             st.write(f"{next_df2_len}/{filtered_df2_sum} {formatted_percentage2}%") 
             st.dataframe(next_df2, width=400, height=200)
             
@@ -397,7 +410,7 @@ result2_for_wordcloud = remove_keys_from_dict(result2, ignore_option)
 
 if __name__ == "__main__":
     if count_column_name == 'word_counts':
-        st.title("Word Cloud")
+        st.subheader("Word Cloud")
         display_wordcloud(result1_for_wordcloud, result2_for_wordcloud)
     else:
         st.write("")
@@ -405,6 +418,13 @@ if __name__ == "__main__":
 
 #charts
 st.subheader("Charts")
+st.markdown("<a name='section-5'></a>", unsafe_allow_html=True)
+
+
+merged_pos_freq_before = merge_and_sort_dataframes((st.session_state['pos_freq_before1']), (st.session_state['pos_freq_before2']), 'POS', 'proportion', ['proportion_a', 'proportion_b'])
+merged_pos_freq_after = merge_and_sort_dataframes((st.session_state['pos_freq_after1']), (st.session_state['pos_freq_after2']), 'POS', 'proportion', ['proportion_a', 'proportion_b'])
+merged_word_freq_before = merge_and_sort_dataframes((st.session_state['word_freq_before1']), (st.session_state['word_freq_before2']), 'word', 'count', ['count_a', 'count_b'])
+merged_word_freq_after = merge_and_sort_dataframes((st.session_state['word_freq_after1']), (st.session_state['word_freq_after2']), 'word', 'count', ['count_a', 'count_b'])
 
 # def process_dataframe(merged_df):
 #     df_copy = merged_df.copy()
@@ -419,7 +439,6 @@ st.subheader("Charts")
 def plot_bar_graph(df, col_a, col_b):
     df = remove_rows_by_index(df, ignore_option).head(head_num)
     df[[col_a, col_b]].plot(kind='bar', figsize=(12, 6))
-    plt.title('Percentage Comparison by POS or Word')
     plt.ylabel('Percentage(%)')
     plt.xlabel('POS or Word')
     plt.legend(['Dataset A', 'Dataset B'])
@@ -462,9 +481,9 @@ def plot_all_graphs(df, col1, col2):
 
 def main():
     
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
-        count_option = st.selectbox("Analysis option:", ('show dataset analysis', 'show word analysis'),key='selectbox70')
+        count_option = st.radio("Analysis option:", ('show dataset analysis', 'show word analysis'),key='selectbox70')
     with col2:
         chart_options = st.multiselect('Select display chart type:', ['all','bar chart', 'pie chart', 'stacked bar graph'])
 
@@ -479,10 +498,11 @@ def main():
             if 'stacked bar graph' in chart_options:
                 plot_stacked_bar_graph(merged_df, 'percentage_a', 'percentage_b')
     elif count_option == 'show word analysis':
-        display_option3 = st.selectbox(
-        "Select data to display",
-        ("Both", "Words Before", "Words After"),key='selectbox71'
-    )
+        with col3:
+            display_option3 = st.radio(
+            "Select data to display",
+            ("Both", "Words Before", "Words After")
+        )
         if 'Both' in display_option3:
             st.subheader('POS before')
             plot_pie_graph(merged_pos_freq_before, 'proportion_a', 'proportion_b')
@@ -515,24 +535,4 @@ def main():
 
 
 if __name__ == "__main__":
-    merged_pos_freq_before = merge_and_sort_dataframes((st.session_state['pos_freq_before1']), (st.session_state['pos_freq_before2']), 'POS', 'proportion', ['proportion_a', 'proportion_b'])
-    merged_pos_freq_after = merge_and_sort_dataframes((st.session_state['pos_freq_after1']), (st.session_state['pos_freq_after2']), 'POS', 'proportion', ['proportion_a', 'proportion_b'])
-    merged_word_freq_before = merge_and_sort_dataframes((st.session_state['word_freq_before1']), (st.session_state['word_freq_before2']), 'word', 'count', ['count_a', 'count_b'])
-    merged_word_freq_after = merge_and_sort_dataframes((st.session_state['word_freq_after1']), (st.session_state['word_freq_after2']), 'word', 'count', ['count_a', 'count_b'])
-main()
-
-# if __name__ == "__main__":
-#     # Initialize session state keys with default values if they do not exist
-#     keys = ['pos_freq_before1', 'pos_freq_before2', 'word_freq_before1', 'word_freq_before2', 'pos_freq_after1', 'pos_freq_after2', 'word_freq_after1', 'word_freq_after2']
-#     for key in keys:
-#         if key not in st.session_state:
-#             st.session_state[key] = None  # or some other appropriate default value
-
-#     # Check if the keys have been populated with data before using them
-#     if all(key in st.session_state and st.session_state[key] is not None for key in keys):
-#         merged_pos_freq_before = merge_and_sort_dataframes(st.session_state['pos_freq_before1'], st.session_state['pos_freq_before2'], 'POS', 'proportion', ['proportion_a', 'proportion_b'])
-#         merged_word_freq_before = merge_and_sort_dataframes(st.session_state['word_freq_before1'], st.session_state['word_freq_before2'], 'POS', 'proportion', ['proportion_a', 'proportion_b'])
-#         merged_pos_freq_after = merge_and_sort_dataframes(st.session_state['pos_freq_after1'], st.session_state['pos_freq_after2'], 'POS', 'proportion', ['proportion_a', 'proportion_b'])
-#         merged_word_freq_after = merge_and_sort_dataframes(st.session_state['word_freq_after1'], st.session_state['word_freq_after2'], 'POS', 'proportion', ['proportion_a', 'proportion_b'])
-    
-#     main()
+    main()

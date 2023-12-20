@@ -56,26 +56,6 @@ elif page == "Page 2":
     st.write("This is page 2.")
 
 
-# Create a table of contents in the sidebar
-st.sidebar.title("Table of Contents")
-st.sidebar.markdown("""
-- [Section s](#section-1)
-- [Section 2](#section-2)
-- [Section 3](#section-3)
-""")
-
-# Content for the main page
-st.header("Section 1")
-st.write("This is the content of Section 1.")
-st.markdown("<a name='section-1'></a>", unsafe_allow_html=True)
-
-st.header("Section 2")
-st.write("This is the content of Section 2.")
-st.markdown("<a name='section-2'></a>", unsafe_allow_html=True)
-
-st.header("Section 3")
-st.write("This is the content of Section 3.")
-st.markdown("<a name='section-3'></a>", unsafe_allow_html=True)
 
 # Sample data for the table
 data = {
