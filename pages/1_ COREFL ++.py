@@ -17,7 +17,13 @@ st.set_page_config(layout="wide")
 st.title('COREFL ++')
 
 
-
+# Create a table of contents in the sidebar
+st.sidebar.title("Table of Contents")
+st.sidebar.markdown("""
+- [Corpus data](#section-1)
+- [Data Comparison Filter](#section-2)
+- [Section 3](#section-3)
+""")
 
 
 # values = st.slider(
@@ -25,13 +31,43 @@ st.title('COREFL ++')
 #     0.0, 100.0, (25.0, 75.0))
 # st.write('Values:', values)
 
-data = "chaplin_learners_all_famous-person.csv"
-# data = "chaplin_learners_all_film.csv"
-# data = "chaplin_learners_all_frog.csv"
-# data = "chaplin_learners_analysis4.csv"
 
-df = pd.read_csv(data, sep='\t', encoding='utf-8')
+
+def task_select_boxes():
+    # Define a dictionary mapping task names to file paths
+    task_mapping = {
+        'Famous Person': "learners_all_famous-person.csv",
+        'Film': "learners_all_film.csv",
+        'Frog': "learners_all_frog.csv",
+        'Chaplin': "learners_all_chaplin.csv"
+    }
+
+    task_label = st.selectbox(
+        'Select task option:',
+        options=list(task_mapping.keys()), 
+        key='selectbox90'
+    )
+
+    selected_file = task_mapping[task_label]
+
+    return selected_file
+
+st.markdown("<a name='section-1'></a>", unsafe_allow_html=True)
+st.subheader('Corpus data')
+
+
+with st.expander("💡"):
+    st.markdown('> :bulb: **Tip:** Remember to appreciate the little things in life.')
+    st.info('First, please select the type of task here. Afterward, you can select the number of data entries to display. By scrolling to the right or down, you can view all the data."')
+
+if __name__ == "__main__":
+    selected_file = task_select_boxes()
+    if selected_file:
+        df = pd.read_csv(selected_file, sep='\t', encoding='utf-8')
+
 df_len = len(df)
+
+st.write('Data size:',df_len)
 
 def categorize_levels(df, column_name):
     df['Proficiency_Category'] = df[column_name].apply(lambda x: 'intermediate' if x in ['A1 (lower beginner)', 'A2 (upper beginner)', 'B1 (lower intermediate)'] else 'advanced')
@@ -48,11 +84,6 @@ def df_head_select_boxes(df_len):
         (10, 20, 50, 100, 'all'), key='selectbox20')
     return df_len if head_option == 'all' else head_option
 
-st.subheader('Corpus data')
-with st.expander("💡"):
-    st.markdown('> :bulb: **Tip:** Remember to appreciate the little things in life.')
-    st.info('Here, you can select the number of data entries to display. By scrolling to the right or down, you can view all the data.')
-st.write('Data size:',df_len)
 
 if __name__ == "__main__":
     df_len = len(df) 
@@ -68,9 +99,8 @@ st.dataframe(df.head(head_option), height=200)
 
 
 column_names = df.columns.tolist()
-
-
 st.subheader('Data Comparison Filter')
+st.markdown("<a href='https://dspy-final-project.streamlit.app/~/+/COREFL_++#data-comparison-filter'></a>", unsafe_allow_html=True)
 st.info('Here, you can select parameters for comparing two sets of data. By choosing the items you want to display in the "Choose columns:" section, you can verify that the filter function is working properly. The results can be checked in the sidebar on the left.')
 
 
@@ -93,6 +123,8 @@ with col2:
 
 display_selected_options(selected_options1, 'Filter Dataset A')
 display_selected_options(selected_options2, 'Filter Dataset B')
+# display_selected_options(selected_options1, "Selected Filters", filtered_df1, filtered_df2)
+# display_selected_options(selected_options2, "Selected Filters", filtered_df1, filtered_df2)
 
 
 

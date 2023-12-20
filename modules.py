@@ -64,6 +64,19 @@ def display_selected_options(selected_options, title):
         for column, option in selected_options.items():
             st.write(f"- **{column}:** `{option}`")
 
+# def display_selected_options(selected_options, title, dataset_a, dataset_b):
+#     with st.sidebar:
+#         st.markdown(f"#### {title}")
+
+#         data = {
+#             'Item': list(selected_options.keys()),
+#             'Filter Dataset A': [dataset_a.get(key, 'N/A') for key in selected_options.keys()],
+#             'Filter Dataset B': [dataset_b.get(key, 'N/A') for key in selected_options.keys()]
+#         }
+
+#         df = pd.DataFrame(data)
+#         st.table(df)
+
 def apply_filters(df, column_prefix, l1_options=('All','German', 'Spanish'), 
                 proficiency_options=('All','intermediate', 'advanced')):
     selected_options = {}
