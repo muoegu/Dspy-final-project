@@ -25,8 +25,11 @@ st.title('COREFL ++')
 #     0.0, 100.0, (25.0, 75.0))
 # st.write('Values:', values)
 
+data = "chaplin_learners_all_famous-person.csv"
+# data = "chaplin_learners_all_film.csv"
+# data = "chaplin_learners_all_frog.csv"
+# data = "chaplin_learners_analysis4.csv"
 
-data = "chaplin_learners_analysis4.csv"
 df = pd.read_csv(data, sep='\t', encoding='utf-8')
 df_len = len(df)
 
