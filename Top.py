@@ -11,7 +11,13 @@ st.write('R??????: Mikhail Stepanenko')
 st.write('R11142010: Micah Kitsunai')
 
 
-st.link_button("Go to gallery", 'http://corefl.learnercorpora.com/')
+st.link_button("COREFL", 'http://corefl.learnercorpora.com/')
+
+st.write('Chaplin youtube: ','https://youtu.be/eO1HvF2G2Sw?si=YYsvgScwzDREkz-P')
+video_url = 'https://youtu.be/eO1HvF2G2Sw?si=YYsvgScwzDREkz-P'
+
+st.video(video_url)
+
 # st.slider("Pick a number", 0, 100)
 # st.select_slider("Pick a size", ["S", "M", "L"])
 # st.balloons()
