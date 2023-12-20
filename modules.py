@@ -60,9 +60,9 @@ def filter_df(df, column, options, default_option, key):
 
 def display_selected_options(selected_options, title):
     with st.sidebar:
-        st.markdown(f"### {title}")
+        st.markdown(f"#### {title}")
         for column, option in selected_options.items():
-            st.write(f"- **{column}:** {option}")
+            st.write(f"- **{column}:** `{option}`")
 
 def apply_filters(df, column_prefix, l1_options=('All','German', 'Spanish'), 
                 proficiency_options=('All','intermediate', 'advanced')):

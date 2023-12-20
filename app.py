@@ -1,14 +1,11 @@
 import streamlit as st
-import spacy
-
-# nlp = spacy.load("en_core_web_sm")
 
 st.title('Final Project')
 st.write('程式設計與資料科學導論(Dspy)')
 
-st.write('R??????: Yusuke Taira')
-st.write('R??????: Mikhail Stepanenko')
-st.write('R11142010: Micah Kitsunai')
+st.write('R11142011: Yusuke Taira (語言所)')
+st.write('R10142010: Mikhail Stepanenko (語言所)')
+st.write('R11142010: Micah Kitsunai (語言所)')
 
 
 st.link_button("COREFL", 'http://corefl.learnercorpora.com/')
