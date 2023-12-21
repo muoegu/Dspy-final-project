@@ -7,8 +7,6 @@ from modules import apply_filters
 from modules import display_selected_options
 from modules import result2df
 from modules import display_wordcloud
-import seaborn as sns
-
 
 
 
