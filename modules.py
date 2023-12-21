@@ -80,18 +80,64 @@ def display_selected_options(selected_options, title, len):
 def apply_filters(df, column_prefix, l1_options=('All','German', 'Spanish'), 
                 proficiency_options=('All','intermediate', 'advanced')):
     selected_options = {}
+
     df_filtered, option = filter_df(df, 'Medium', ('All','Written', 'Spoken'), 'All', f'{column_prefix}selectbox1')
     selected_options['Medium'] = option
+
     df_filtered, option = filter_df(df_filtered, 'Sex', ('All','Male', 'Female'), 'All', f'{column_prefix}selectbox2')
     selected_options['Sex'] = option
+
     df_filtered, option = filter_df(df_filtered, 'L1', l1_options, 'All', f'{column_prefix}selectbox3')
     selected_options['L1'] = option
-    df_filtered, option = filter_df(df_filtered, 'Proficiency_Category', proficiency_options, 'All', f'{column_prefix}selectbox4')
-    selected_options['Proficiency_Category'] = option
+
+    df_filtered, option = filter_df(df_filtered, 'Proficiency_Category(2)', proficiency_options, 'All', f'{column_prefix}selectbox4')
+    selected_options['Proficiency_Category(2)'] = option
+
+    df_filtered, option = filter_df(df_filtered, 'Proficiency_Category(3)', ('All','beginner','intermediate', 'advanced'), 'All', f'{column_prefix}selectbox5')
+    selected_options['Proficiency_Category(3)'] = option
+
+
+    age_range = st.slider('Age', 0, 100, (0, 100), key=f'{column_prefix}age_range_slider')
+    df_filtered = df_filtered[(df_filtered['Age'] >= age_range[0]) & (df_filtered['Age'] <= age_range[1])]
+    selected_options['Age'] = f"{age_range[0]} - {age_range[1]}"
+    
+    age_range = st.slider('Years studying English', 0, 100, (0, 100), key=f'{column_prefix}age_range_slider2')
+    df_filtered = df_filtered[(df_filtered['Years studying English'] >= age_range[0]) & (df_filtered['Years studying English'] <= age_range[1])]
+    selected_options['Years studying English'] = f"{age_range[0]} - {age_range[1]}"
+    
+    age_range = st.slider('Age of exposure to English', 0, 100, (0, 100), key=f'{column_prefix}age_range_slider3')
+    df_filtered = df_filtered[(df_filtered['Age of exposure to English'] >= age_range[0]) & (df_filtered['Age of exposure to English'] <= age_range[1])]
+    selected_options['Age of exposure to English'] = f"{age_range[0]} - {age_range[1]}"
+
     selected_columns = st.multiselect('Choose columns:', df_filtered.columns, key=f'{column_prefix}multiselect', placeholder="ex: Medium, L1")
+
     additional_columns = ['token_details', 'word_pos_pairs', 'word_counts', 'pos_counts', 'lemma_counts']
     filtered_df = df_filtered[selected_columns + additional_columns]
+
     return filtered_df, selected_options
+
+
+# def apply_filters(df, column_prefix, l1_options=('All','German', 'Spanish'), 
+#                 proficiency_options=('All','intermediate', 'advanced')):
+#     selected_options = {}
+#     df_filtered, option = filter_df(df, 'Medium', ('All','Written', 'Spoken'), 'All', f'{column_prefix}selectbox1')
+#     selected_options['Medium'] = option
+#     df_filtered, option = filter_df(df_filtered, 'Sex', ('All','Male', 'Female'), 'All', f'{column_prefix}selectbox2')
+#     selected_options['Sex'] = option
+#     df_filtered, option = filter_df(df_filtered, 'L1', l1_options, 'All', f'{column_prefix}selectbox3')
+#     selected_options['L1'] = option
+#     df_filtered, option = filter_df(df_filtered, 'Proficiency_Category(2)', proficiency_options, 'All', f'{column_prefix}selectbox4')
+#     selected_options['Proficiency_Categor(2)'] = option
+#     df_filtered, option = filter_df(df_filtered, 'Proficiency_Category(3)', ('All','beginner','intermediate', 'advanced'), 'All', f'{column_prefix}selectbox5')
+#     selected_options['Proficiency_Category(3)'] = option
+#     min_value, max_value = int(df['Age'].min()), int(df['Age'].max())
+#     age_range = st.slider('Select a range of Age', min_value, max_value, (min_value, max_value))
+#     df_filtered = df[(df['Age'] >= age_range[0]) & (df['Age'] <= age_range[1]),f'{column_prefix}slider10']
+#     selected_options['Age Range'] = f"{age_range[0]} - {age_range[1]}"
+#     selected_columns = st.multiselect('Choose columns:', df_filtered.columns, key=f'{column_prefix}multiselect', placeholder="ex: Medium, L1")
+#     additional_columns = ['token_details', 'word_pos_pairs', 'word_counts', 'pos_counts', 'lemma_counts']
+#     filtered_df = df_filtered[selected_columns + additional_columns]
+#     return filtered_df, selected_options
 
 
 

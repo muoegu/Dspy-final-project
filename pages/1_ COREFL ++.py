@@ -7,6 +7,9 @@ from modules import apply_filters
 from modules import display_selected_options
 from modules import result2df
 from modules import display_wordcloud
+import seaborn as sns
+
+
 
 
 st.set_page_config(layout="wide")
@@ -30,7 +33,7 @@ st.sidebar.markdown("""
 
 # values = st.slider(
 #     'Select a range of values',
-#     0.0, 100.0, (25.0, 75.0))
+#     0, 100, (25, 75))
 # st.write('Values:', values)
 
 
@@ -70,11 +73,23 @@ df_len = len(df)
 st.write('Data size:',df_len)
 
 def categorize_levels(df, column_name):
-    df['Proficiency_Category'] = df[column_name].apply(lambda x: 'intermediate' if x in ['A1 (lower beginner)', 'A2 (upper beginner)', 'B1 (lower intermediate)'] else 'advanced')
+    df['Proficiency_Category(2)'] = df[column_name].apply(lambda x: 'intermediate' if x in ['A1 (lower beginner)', 'A2 (upper beginner)', 'B1 (lower intermediate)'] else 'advanced')
     return df
 
 def add_total_counts(df, column_name):
     df['total_counts'] = df[column_name].apply(lambda x: sum(eval(x).values()) if isinstance(x, str) and x.startswith('{') else 0)
+    return df
+
+def categorize_levels2(df, column_name):
+    def categorize(x):
+        if x in ['A1 (lower beginner)', 'A2 (upper beginner)']:
+            return 'beginner'
+        elif x in ['B1 (lower intermediate)', 'B2 (upper intermediate)']:
+            return 'intermediate'
+        else:
+            return 'advanced'
+
+    df['Proficiency_Category(3)'] = df[column_name].apply(categorize)
     return df
 
 
@@ -91,6 +106,7 @@ if __name__ == "__main__":
 
 
 df = categorize_levels(df, 'Proficiency')
+df = categorize_levels2(df, 'Proficiency')
 df = add_total_counts(df, 'pos_counts')
 
 st.dataframe(df.head(head_option), height=200)
@@ -449,6 +465,7 @@ def plot_pie_graph(df, col_a, col_b):
     df = remove_rows_by_index(df, ignore_option).head(head_num)
     total_a = df[col_a].sum()
     total_b = df[col_b].sum()
+    colors = sns.color_palette('bright')[0:len(df)]
     fig, axs = plt.subplots(1, 2, figsize=(12, 6))
     axs[0].pie(df[col_a], labels=df.index, autopct=lambda p: '{:.1f}%'.format(p * total_a / 100), startangle=140)
     axs[0].set_title('Dataset A')
