@@ -57,15 +57,15 @@ elif page == "Page 2":
 
 
 
-# Sample data for the table
-data = {
-    'Column 1': ['A1', 'A2', 'A3', 'A4'],
-    'Column 2': ['B1', 'B2', 'B3', 'B4'],
-    'Column 3': ['C1', 'C2', 'C3', 'C4']
-}
+# # Sample data for the table
+# data = {
+#     'Column 1': ['A1', 'A2', 'A3', 'A4'],
+#     'Column 2': ['B1', 'B2', 'B3', 'B4'],
+#     'Column 3': ['C1', 'C2', 'C3', 'C4']
+# }
 
-# Create a DataFrame
-df = pd.DataFrame(data)
+# # Create a DataFrame
+# df = pd.DataFrame(data)
 
-# Display the table in the sidebar without an index
-st.sidebar.write(df.to_html(index=False), unsafe_allow_html=True)
+# # Display the table in the sidebar without an index
+# st.sidebar.write(df.to_html(index=False), unsafe_allow_html=True)
