@@ -14,7 +14,6 @@ st.set_page_config(layout="wide")
 
 
 
-
 st.title('COREFL ++')
 
 
@@ -463,7 +462,6 @@ def plot_pie_graph(df, col_a, col_b):
     df = remove_rows_by_index(df, ignore_option).head(head_num)
     total_a = df[col_a].sum()
     total_b = df[col_b].sum()
-    colors = sns.color_palette('bright')[0:len(df)]
     fig, axs = plt.subplots(1, 2, figsize=(12, 6))
     axs[0].pie(df[col_a], labels=df.index, autopct=lambda p: '{:.1f}%'.format(p * total_a / 100), startangle=140)
     axs[0].set_title('Dataset A')
