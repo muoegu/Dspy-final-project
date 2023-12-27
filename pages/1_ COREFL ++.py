@@ -1,21 +1,19 @@
 import streamlit as st
 import pandas as pd
 from modules import Count_sum
-from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from modules import apply_filters
 from modules import display_selected_options
 from modules import result2df
 from modules import display_wordcloud
-
+import numpy as np
 
 
 st.set_page_config(layout="wide")
 
 
-
 st.title('COREFL ++')
-
+st.info("This app is an enhanced corpus analysis application designed to utilize the COEFL corpus(http://corefl.learnercorpora.com/) for English learners, making comparative analysis and visualization simpler. Please refer to the supplied hints for easier navigation and use of the app.")
 
 # Create a table of contents in the sidebar
 st.sidebar.title("Contents")
@@ -28,53 +26,18 @@ st.sidebar.markdown("""
 """)
 
 
-# values = st.slider(
-#     'Select a range of values',
-#     0, 100, (25, 75))
-# st.write('Values:', values)
-
-
-
-def task_select_boxes():
-    # Define a dictionary mapping task names to file paths
-    task_mapping = {
-        'Famous Person': "learners_all_famous-person.csv",
-        'Film': "learners_all_film.csv",
-        'Frog': "learners_all_frog.csv",
-        'Chaplin': "learners_all_chaplin.csv"
-    }
-
-    task_label = st.radio(
-        'Select task option:',
-        options=list(task_mapping.keys()))
-
-    selected_file = task_mapping[task_label]
-
-    return selected_file
-
 st.markdown("<a name='section-1'></a>", unsafe_allow_html=True)
 st.subheader('Corpus data')
 
 
-with st.expander("Hint"):
-    st.info('💡First, please select the type of task here. Afterward, you can select the number of data entries to display. By scrolling to the right or down, you can view all the data."')
-
-
-if __name__ == "__main__":
-    selected_file = task_select_boxes()
-    if selected_file:
-        df = pd.read_csv(selected_file, sep='\t', encoding='utf-8')
+df = pd.read_csv('learners_combined_data.csv', sep='\t', encoding='utf-8')
 
 df_len = len(df)
-
 st.write('Data size:',df_len)
 
+#add proficiency category calomn
 def categorize_levels(df, column_name):
     df['Proficiency_Category(2)'] = df[column_name].apply(lambda x: 'intermediate' if x in ['A1 (lower beginner)', 'A2 (upper beginner)', 'B1 (lower intermediate)'] else 'advanced')
-    return df
-
-def add_total_counts(df, column_name):
-    df['total_counts'] = df[column_name].apply(lambda x: sum(eval(x).values()) if isinstance(x, str) and x.startswith('{') else 0)
     return df
 
 def categorize_levels2(df, column_name):
@@ -89,29 +52,32 @@ def categorize_levels2(df, column_name):
     df['Proficiency_Category(3)'] = df[column_name].apply(categorize)
     return df
 
-
-def df_head_select_boxes(df_len):
-    head_option = st.selectbox(
-        'Display Data Size:',
-        (10, 20, 50, 100, 'all'), key='selectbox20')
-    return df_len if head_option == 'all' else head_option
-
-
-if __name__ == "__main__":
-    df_len = len(df) 
-    head_option = df_head_select_boxes(df_len)
-
+#add total counts column
+def add_total_counts(df, column_name):
+    df['total_counts'] = df[column_name].apply(lambda x: sum(eval(x).values()) if isinstance(x, str) and x.startswith('{') else 0)
+    return df
 
 df = categorize_levels(df, 'Proficiency')
 df = categorize_levels2(df, 'Proficiency')
 df = add_total_counts(df, 'pos_counts')
 
+
+def select_display_size(df_len):
+    head_option = st.selectbox(
+        'Display Data Size:',
+        (10, 20, 50, 100, 'all'), key='selectbox20')
+    return df_len if head_option == 'all' else head_option
+
+if __name__ == "__main__":
+    df_len = len(df) 
+    head_option = select_display_size(df_len)
+
+
+
 st.dataframe(df.head(head_option), height=200)
 #st.write('Data description')
 #st.write(df.describe())
 
-
-column_names = df.columns.tolist()
 
 st.subheader('Data Comparison Filter')
 st.markdown("<a href='section-2'></a>", unsafe_allow_html=True)
@@ -134,13 +100,10 @@ with col2:
     filtered_df2_len = len(filtered_df2)
     st.write('Filtered DatasetB :', filtered_df2_len)
     st.dataframe(filtered_df2.head(10), height=200)
-    
 
+#display selected options on sidebar
 display_selected_options(selected_options1, 'Filter Dataset A' ,filtered_df1_len)
 display_selected_options(selected_options2, 'Filter Dataset B',filtered_df2_len)
-# display_selected_options(selected_options1, "Selected Filters", filtered_df1, filtered_df2)
-# display_selected_options(selected_options2, "Selected Filters", filtered_df1, filtered_df2)
-
 
 
 
@@ -421,16 +384,16 @@ def remove_keys_from_dict(target_dict, keys_to_remove):
 result1_for_wordcloud = remove_keys_from_dict(result1, ignore_option)
 result2_for_wordcloud = remove_keys_from_dict(result2, ignore_option)
 
-if __name__ == "__main__":
-    if count_column_name == 'word_counts':
-        st.subheader("Word Cloud")
-        display_wordcloud(result1_for_wordcloud, result2_for_wordcloud)
-    else:
-        st.write("")
+# if __name__ == "__main__":
+#     if count_column_name == 'word_counts':
+#         st.subheader("Word Cloud")
+#         display_wordcloud(result1_for_wordcloud, result2_for_wordcloud)
+#     else:
+#         st.write("")
 
 
 #charts
-st.subheader("Charts")
+st.subheader("Visualaization")
 st.markdown("<a name='section-5'></a>", unsafe_allow_html=True)
 
 
@@ -448,10 +411,36 @@ merged_word_freq_after = merge_and_sort_dataframes((st.session_state['word_freq_
 # if __name__ == "__main__":
 #     processed_df = process_dataframe(merged_df)
 
-
 def plot_bar_graph(df, col_a, col_b):
     df = remove_rows_by_index(df, ignore_option).head(head_num)
-    df[[col_a, col_b]].plot(kind='bar', figsize=(12, 6))
+    color_a = '#bdecb6' 
+    color_b = '#c3b1e1'
+    ax = df[[col_a, col_b]].plot(kind='bar', figsize=(12, 6), color=[color_a, color_b])
+    for p in ax.patches:
+        ax.annotate('{:.1f}%'.format(p.get_height()), (p.get_x() + p.get_width() / 2., p.get_height()), 
+                    ha='center', va='bottom')
+    plt.ylabel('Percentage(%)')
+    plt.xlabel('POS or Word')
+    plt.legend(['Dataset A', 'Dataset B'])
+    plt.xticks(rotation=45)
+    st.pyplot(plt)
+    
+def plot_bar_graph2(df, col_a, col_b):
+    df = remove_rows_by_index(df, ignore_option).head(head_num)
+    
+    # カスタムカラー
+    color_a = '#bdecb6' 
+    color_b = '#c3b1e1'
+
+    # 積み上げ棒グラフの作成
+    ax = df.plot(kind='bar', stacked=True, figsize=(12, 6), color=[color_a, color_b])
+
+    # 各棒に数値を注釈する
+    for bar in ax.patches:
+        ax.annotate('{:.1f}%'.format(bar.get_height()), 
+                    (bar.get_x() + bar.get_width() / 2, bar.get_y() + bar.get_height() / 2),
+                    ha='center', va='center')
+
     plt.ylabel('Percentage(%)')
     plt.xlabel('POS or Word')
     plt.legend(['Dataset A', 'Dataset B'])
@@ -462,27 +451,35 @@ def plot_pie_graph(df, col_a, col_b):
     df = remove_rows_by_index(df, ignore_option).head(head_num)
     total_a = df[col_a].sum()
     total_b = df[col_b].sum()
+    cmap = plt.get_cmap('viridis')
+    colors = cmap(np.linspace(0, 1, len(df)))
+    colors = colors[:, :-1]  
+    colors = colors + (1 - colors) * 0.6  
     fig, axs = plt.subplots(1, 2, figsize=(12, 6))
-    axs[0].pie(df[col_a], labels=df.index, autopct=lambda p: '{:.1f}%'.format(p * total_a / 100), startangle=140)
+    axs[0].pie(df[col_a], labels=df.index, autopct=lambda p: '{:.1f}%'.format(p * total_a / 100), startangle=140, colors=colors)
     axs[0].set_title('Dataset A')
-    axs[1].pie(df[col_b], labels=df.index, autopct=lambda p: '{:.1f}%'.format(p * total_b / 100), startangle=140)
+    axs[1].pie(df[col_b], labels=df.index, autopct=lambda p: '{:.1f}%'.format(p * total_b / 100), startangle=140, colors=colors)
     axs[1].set_title('Dataset B')
     st.pyplot(plt)
 
-def plot_stacked_bar_graph(df, col_a, col_b):
-    df = remove_rows_by_index(df, ignore_option).head(head_num)
-    df[[col_a, col_b]].plot(kind='bar', stacked=True, figsize=(12, 6))
-    plt.title('Stacked Percentage Comparison by POS or Word')
-    plt.ylabel('Percentage(%)')
-    plt.xlabel('POS or Word')
-    plt.legend(['Dataset A', 'Dataset B'])
-    plt.xticks(rotation=45)
-    st.pyplot(plt)
+# def plot_stacked_bar_graph(df, col_a, col_b):
+#     df = remove_rows_by_index(df, ignore_option).head(head_num)
+#     df[[col_a, col_b]].plot(kind='bar', stacked=True, figsize=(12, 6))
+#     plt.title('Stacked Percentage Comparison by POS or Word')
+#     plt.ylabel('Percentage(%)')
+#     plt.xlabel('POS or Word')
+#     plt.legend(['Dataset A', 'Dataset B'])
+#     plt.xticks(rotation=45)
+#     st.pyplot(plt)
     
 def plot_all_graphs(df, col1, col2):
+    display_wordcloud(result1_for_wordcloud, result2_for_wordcloud)
     plot_pie_graph(df, col1, col2)
     plot_bar_graph(df, col1, col2)
-    plot_stacked_bar_graph(df, col1, col2)
+    plot_bar_graph2(df, col1, col2)
+    
+    # plot_stacked_bar_graph(df, col1, col2)
+
 
 
 # merged_df2 = merge_and_sort_dataframes(pos_freq_before1, pos_freq_before2, 'POS', 'proportion', ['percentage_a', 'percentage_b'])
@@ -498,7 +495,7 @@ def main():
     with col1:
         count_option = st.radio("Analysis option:", ('show dataset analysis', 'show word analysis'),key='selectbox70')
     with col2:
-        chart_options = st.multiselect('Select display chart type:', ['all','bar chart', 'pie chart', 'stacked bar graph'])
+        chart_options = st.multiselect('Select display chart type:', ['all','bar chart', 'pie chart', 'word cloud'])
 
     if count_option == 'show dataset analysis':
         if 'all' in chart_options:
@@ -508,8 +505,8 @@ def main():
                 plot_pie_graph(merged_df, 'percentage_a', 'percentage_b')
             if 'bar chart' in chart_options:
                 plot_bar_graph(merged_df, 'percentage_a', 'percentage_b')
-            if 'stacked bar graph' in chart_options:
-                plot_stacked_bar_graph(merged_df, 'percentage_a', 'percentage_b')
+            if 'word cloud' in chart_options:
+                display_wordcloud(result1_for_wordcloud, result2_for_wordcloud)
     elif count_option == 'show word analysis':
         with col3:
             display_option3 = st.radio(

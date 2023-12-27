@@ -64,24 +64,31 @@ def display_selected_options(selected_options, title, len):
         for column, option in selected_options.items():
             st.write(f"- **{column}:** `{option}`")
 
-# def display_selected_options(selected_options, title, dataset_a, dataset_b):
+# def filter_df(df, column, options, default_options, key, multi=False):
+#     if multi:
+#         options = st.multiselect(column, options, default=default_options, key=key)
+#         if options != default_options:
+#             df = df[df[column].isin(options)]
+#     else:
+#         option = st.selectbox(column, options, key=key)
+#         if option != default_options:
+#             df = df[df[column] == option]
+#     return df, options
+
+# def display_selected_options(selected_options, title, len):
 #     with st.sidebar:
-#         st.markdown(f"#### {title}")
+#         st.markdown(f"#### {title}   (`{len}`)")
+#         for column, option in selected_options.items():
+#             st.write(f"- **{column}:** `{', '.join(option) if isinstance(option, list) else option}`")
 
-#         data = {
-#             'Item': list(selected_options.keys()),
-#             'Filter Dataset A': [dataset_a.get(key, 'N/A') for key in selected_options.keys()],
-#             'Filter Dataset B': [dataset_b.get(key, 'N/A') for key in selected_options.keys()]
-#         }
-
-#         df = pd.DataFrame(data)
-#         st.table(df)
 
 def apply_filters(df, column_prefix, l1_options=('All','German', 'Spanish'), 
                 proficiency_options=('All','intermediate', 'advanced')):
     selected_options = {}
-
-    df_filtered, option = filter_df(df, 'Medium', ('All','Written', 'Spoken'), 'All', f'{column_prefix}selectbox1')
+    df_filtered, option = filter_df(df, 'Task title', ('All','2. Famous person','3. Film','13. Frog', '14. Chaplin'), 'All', f'{column_prefix}selectbox0')
+    selected_options['Task title'] = option
+    
+    df_filtered, option = filter_df(df_filtered, 'Medium', ('All','Written', 'Spoken'), 'All', f'{column_prefix}selectbox1')
     selected_options['Medium'] = option
 
     df_filtered, option = filter_df(df_filtered, 'Sex', ('All','Male', 'Female'), 'All', f'{column_prefix}selectbox2')
@@ -90,8 +97,11 @@ def apply_filters(df, column_prefix, l1_options=('All','German', 'Spanish'),
     df_filtered, option = filter_df(df_filtered, 'L1', l1_options, 'All', f'{column_prefix}selectbox3')
     selected_options['L1'] = option
 
-    df_filtered, option = filter_df(df_filtered, 'Proficiency_Category(2)', proficiency_options, 'All', f'{column_prefix}selectbox4')
+    df_filtered, option = filter_df(df_filtered, 'Proficiency_Category(2)', proficiency_options, ['All'], f'{column_prefix}selectbox4')
     selected_options['Proficiency_Category(2)'] = option
+
+    # df_filtered, option = filter_df(df_filtered, 'Proficiency_Category(2)', proficiency_options, ['All'], f'{column_prefix}selectbox18', multi=True)
+    # selected_options['Proficiency_Category(2)'] = option
 
     df_filtered, option = filter_df(df_filtered, 'Proficiency_Category(3)', ('All','beginner','intermediate', 'advanced'), 'All', f'{column_prefix}selectbox5')
     selected_options['Proficiency_Category(3)'] = option
@@ -116,28 +126,6 @@ def apply_filters(df, column_prefix, l1_options=('All','German', 'Spanish'),
 
     return filtered_df, selected_options
 
-
-# def apply_filters(df, column_prefix, l1_options=('All','German', 'Spanish'), 
-#                 proficiency_options=('All','intermediate', 'advanced')):
-#     selected_options = {}
-#     df_filtered, option = filter_df(df, 'Medium', ('All','Written', 'Spoken'), 'All', f'{column_prefix}selectbox1')
-#     selected_options['Medium'] = option
-#     df_filtered, option = filter_df(df_filtered, 'Sex', ('All','Male', 'Female'), 'All', f'{column_prefix}selectbox2')
-#     selected_options['Sex'] = option
-#     df_filtered, option = filter_df(df_filtered, 'L1', l1_options, 'All', f'{column_prefix}selectbox3')
-#     selected_options['L1'] = option
-#     df_filtered, option = filter_df(df_filtered, 'Proficiency_Category(2)', proficiency_options, 'All', f'{column_prefix}selectbox4')
-#     selected_options['Proficiency_Categor(2)'] = option
-#     df_filtered, option = filter_df(df_filtered, 'Proficiency_Category(3)', ('All','beginner','intermediate', 'advanced'), 'All', f'{column_prefix}selectbox5')
-#     selected_options['Proficiency_Category(3)'] = option
-#     min_value, max_value = int(df['Age'].min()), int(df['Age'].max())
-#     age_range = st.slider('Select a range of Age', min_value, max_value, (min_value, max_value))
-#     df_filtered = df[(df['Age'] >= age_range[0]) & (df['Age'] <= age_range[1]),f'{column_prefix}slider10']
-#     selected_options['Age Range'] = f"{age_range[0]} - {age_range[1]}"
-#     selected_columns = st.multiselect('Choose columns:', df_filtered.columns, key=f'{column_prefix}multiselect', placeholder="ex: Medium, L1")
-#     additional_columns = ['token_details', 'word_pos_pairs', 'word_counts', 'pos_counts', 'lemma_counts']
-#     filtered_df = df_filtered[selected_columns + additional_columns]
-#     return filtered_df, selected_options
 
 
 
